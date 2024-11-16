@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - ¡Revelación de Género!</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #ffadad, #ffb3b3, #ffeb99, #b3ffb3, #cce0ff, #e6b3ff);
+            background-size: 400% 400%;
+            animation: rainbow 8s ease infinite;
+        }
+        
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75); /* Fondo negro con opacidad */
+            z-index: 1000;
+            display: none; /* Oculto inicialmente */
+        }
+        
+        h1 {
+            color: #ff66b2; /* Rosa */
+            font-size: 3em;
+            margin-top: 20px;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        
+        .grid-item {
+            width: 120px;
+            height: 120px;
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 20px;
+            font-size: 3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: bold;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        .grid-item:hover {
+            background-color: #d6d6d6;
+        }
+        
+        .grid-item.X {
+            color: #1e90ff; /* Azul para la X */
+        }
+        
+        .grid-item.O {
+            color: #ff66b2; /* Rosa para la O */
+        }
+        
+        .message {
+            font-size: 3em;
+            margin-top: 20px;
+            color: #ff66b2;
+            display: inline-block;
+            animation: messageAnimation 1s ease-in-out;
+        }
+        
+        @keyframes messageAnimation {
+            0% { transform: scale(1); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        #restart {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            margin-top: 20px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        #restart:hover {
+            background-color: #45a049;
+        }
+        
+        /* Globos */
+        .balloons {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            color: pink;
+            animation: float 2s ease-in-out infinite;
+            z-index: 1000;
+        }
+        
+        .balloons-bottom {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            color: pink;
+            animation: float 2s ease-in-out infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes float {
+            0% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-20px); }
+            100% { transform: translateX(-50%) translateY(0); }
+        }
+        
+        .confetti {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 2000;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/colored-stripes.png');
+            animation: confetti 3s ease-out infinite;
+        }
+        
+        @keyframes confetti {
+            0% {
+                top: -50px;
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+        
+        /* Estilo para el texto "Es niña" */
+        #revelation-text {
+            font-size: 3.5em;
+            color: #ff66b2;
+            position: absolute;
+            top: 50%; /* Centrado verticalmente */
+            left: 50%; /* Centrado horizontalmente */
+            transform: translate(-50%, -50%); /* Ajusta para asegurar que esté perfectamente centrado */
+            z-index: 2001; /* Asegura que esté sobre otros elementos */
+            width: 100%; /* Asegura que el contenedor ocupe todo el ancho */
+            text-align: center; /* Centra el texto dentro del contenedor */
+        }
+        
+        /* Animación de cada línea con retraso */
+        .revelation-line {
+            opacity: 0; /* Inicialmente invisibles */
+            animation: textAnimation 1.5s ease-in-out forwards;
+        }
+        
+        /* Animación para la aparición de cada línea del texto */
+        @keyframes textAnimation {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Animación para hacer que las líneas desaparezcan */
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* La línea 1 aparece primero y se desvanece después de 3.5s */
+        .line-1 {
+            animation: textAnimation 1.5s ease-in-out forwards, fadeOut 1s 3.5s forwards; /* La línea desaparece después de 3.5 segundos */
+        }
+        
+        /* La línea 2 aparece después de 3.5s cuando la primera ya ha desaparecido */
+        .line-2 {
+            animation: textAnimation 3s ease-in-out 6s forwards; /* La línea 2 aparece después de 3.5 segundos */
+        }
+        
+        /* Animación de fondo arcoíris */
+        @keyframes rainbow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Media Queries para pantallas más pequeñas */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.5em; /* Reducir el tamaño de la fuente del título en pantallas pequeñas */
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(3, 1fr); /* Asegura que las celdas ocupen todo el espacio disponible */
+        grid-template-rows: repeat(3, 1fr); /* Asegura que las filas sean flexibles */
+        width: 90%;
+        max-width: 350px; /* Limita el tamaño de la cuadrícula */
+    }
+
+    .grid-item {
+        font-size: 2.5em; /* Reducir el tamaño de las celdas */
+        height: 100px;
+        width: 100px;
+    }
+
+    .message {
+        font-size: 2em; /* Reducir el tamaño de la fuente del mensaje */
+    }
+
+    #restart {
+        font-size: 1.3em; /* Reducir el tamaño del botón en pantallas pequeñas */
+    }
+
+    .balloons, .balloons-bottom {
+        font-size: 2em; /* Reducir el tamaño de los globos */
+    }
+
+    /* Ajustes para el texto de revelación */
+    #revelation-text {
+        font-size: 2em; /* Reducir el tamaño del texto de revelación */
+    }
+
+    .revelation-line {
+        font-size: 1.5em; /* Ajustar tamaño de las líneas del texto */
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2em; /* Aún más pequeño en pantallas muy pequeñas */
+    }
+
+    .grid-container {
+        width: 95%;
+        max-width: 300px; /* Aseguramos que la cuadrícula no sea demasiado grande */
+    }
+
+    .grid-item {
+        font-size: 2em; /* Reducir el tamaño aún más en pantallas más pequeñas */
+    }
+
+    .message {
+        font-size: 1.5em; /* Reducir el tamaño del mensaje */
+    }
+
+    #restart {
+        font-size: 1.2em; /* Ajustar el tamaño del botón para pantallas pequeñas */
+    }
+
+    .balloons, .balloons-bottom {
+        font-size: 1.5em; /* Asegurar que los globos sean de tamaño adecuado */
+    }
+
+    /* Ajustes para el texto de revelación */
+    #revelation-text {
+        font-size: 1em; /* Reducir aún más el tamaño en pantallas pequeñas */
+    }
+
+    .revelation-line {
+        font-size: 1.5em; /* Reducir tamaño de las líneas */
+    }
+}
+
+    </style>
+</head>
+<body>
+    <h1 style="color:#000000">¡Juega y descubre el Genero!</h1>
+    <div class="grid-container" id="board">
+        <div class="grid-item" id="0" onclick="playerMove(0)"></div>
+        <div class="grid-item" id="1" onclick="playerMove(1)"></div>
+        <div class="grid-item" id="2" onclick="playerMove(2)"></div>
+        <div class="grid-item" id="3" onclick="playerMove(3)"></div>
+        <div class="grid-item" id="4" onclick="playerMove(4)"></div>
+        <div class="grid-item" id="5" onclick="playerMove(5)"></div>
+        <div class="grid-item" id="6" onclick="playerMove(6)"></div>
+        <div class="grid-item" id="7" onclick="playerMove(7)"></div>
+        <div class="grid-item" id="8" onclick="playerMove(8)"></div>
+    </div>
+    <div style="color:#000000" class="message" id="message">¡Juega tu primero!</div>
+    <br>
+    <button id="restart" style="display:none" onclick="resetGame()">Intentar de nuevo</button>
+
+    <div id="overlay"></div> <!-- Capa de superposición -->
+    <div id="balloons" class="balloons" style="display: none;">🎈🎉🎈🎉🎈🎉🎈🎉</div> <!-- Globos arriba -->
+    <div id="balloons-bottom" class="balloons-bottom" style="display: none;">🎈🎉🎈🎉🎈🎉🎈🎉</div> <!-- Globos abajo -->
+
+    <!-- Texto de revelación con líneas separadas -->
+    <div id="revelation-text" style="display: none;">
+        <span style=color:aliceblue class="revelation-line line-1">¿No ganaste?😢<br>¡Igual te decimos!🤣</span><br>
+        <span class="revelation-line line-2">💖¡Leah Valeria is coming!💖</span>
+    </div>
+
+    <script>
+        const board = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameOver = false;
+
+        // Estadísticas de victorias y empates
+        let playerWins = 0;
+        let aiWins = 0;
+        let ties = 0;
+
+        const winConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+
+        function playerMove(index) {
+            if (gameOver || board[index]) return;  // No permite hacer movimiento si ya hay un ganador o la casilla está ocupada
+            board[index] = currentPlayer;
+            const cell = document.getElementById(index);
+            cell.innerText = currentPlayer;
+            cell.classList.add(currentPlayer);
+
+            if (checkWinner(currentPlayer)) {
+                document.getElementById("message").innerText = `¡Has ganado! ¡Es niña Leah Valeria!`;
+                gameOver = true;
+                playerWins++;
+                showRevelation();
+                return;
+            }
+
+            if (isBoardFull()) {
+                gameOver = true;
+                ties++;
+                document.getElementById("message").innerText = "¡Es un empate!";
+                handleFullBoard();
+                return;
+            }
+
+            currentPlayer = 'O';
+            document.getElementById("message").innerText = "Es turno de la IA...";
+            setTimeout(aiMove, 250);
+        }
+
+        function aiMove() {
+            const bestMove = getBestMove(board, 'O');
+            board[bestMove] = 'O';
+            const cell = document.getElementById(bestMove);
+            cell.innerText = 'O';
+            cell.classList.add('O');
+
+            if (checkWinner('O')) {
+                document.getElementById("message").innerText = `¡La IA ha ganado!`;
+                gameOver = true;
+                aiWins++;
+                showRevelation(false); 
+                return;
+            }
+
+            if (isBoardFull()) {
+                gameOver = true;
+                ties++;
+                document.getElementById("message").innerText = "¡Es un empate!";
+                handleFullBoard();
+                return;
+            }
+
+            currentPlayer = 'X';
+            document.getElementById("message").innerText = "¡Es tu turno!";
+        }
+
+        function checkWinner(player) {
+            return winConditions.some(condition => {
+                return condition.every(index => board[index] === player);
+            });
+        }
+
+        function getBestMove(board, player) {
+            const opponent = player === 'X' ? 'O' : 'X';
+            let move = checkForWinningMove(board, player);
+            if (move !== -1) return move;
+            move = checkForWinningMove(board, opponent);
+            if (move !== -1) return move;
+            if (board[4] === null) return 4;
+            const corners = [0, 2, 6, 8];
+            for (let i = 0; i < corners.length; i++) {
+                if (board[corners[i]] === null) return corners[i];
+            }
+            const availableMoves = board.reduce((acc, val, index) => {
+                if (val === null) acc.push(index);
+                return acc;
+            }, []);
+            return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        }
+
+        function checkForWinningMove(board, player) {
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === null) {
+                    board[i] = player;
+                    if (checkWinner(player)) {
+                        board[i] = null;
+                        return i;
+                    }
+                    board[i] = null;
+                }
+            }
+            return -1;
+        }
+
+        function isBoardFull() {
+            return board.every(cell => cell !== null);
+        }
+
+        function resetGame() {
+            gameOver = false;
+            board.fill(null);
+            currentPlayer = 'X';
+            document.getElementById("message").innerText = "¡Es tu turno!";
+            document.getElementById("balloons").style.display = "none";
+            document.getElementById("balloons-bottom").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("revelation-text").style.display = "none"; // Ocultar el texto
+            const cells = document.querySelectorAll('.grid-item');
+            cells.forEach(cell => {
+                cell.innerText = '';
+                cell.classList.remove('X', 'O');
+            });
+            document.getElementById("restart").style.display = "none";
+        }
+
+        function handleFullBoard() {
+            // Si el tablero está lleno y no hay ganador, se considera empate
+            const lastEmptyIndex = board.indexOf(null);
+            if (lastEmptyIndex !== -1) {
+                board[lastEmptyIndex] = 'E'; // Agrega 'E' para indicar empate
+                document.getElementById(lastEmptyIndex).innerText = 'E';
+            }
+            showRevelation(false);
+        }
+
+        function showRevelation(isHumanWinner = true) {
+            // Mostrar la revelación solo después de 3 empates o 3 victorias de la IA, o si el humano gana
+            if (isHumanWinner || aiWins >= 3 || ties >= 3) {
+                document.getElementById("overlay").style.display = "block"; // Muestra la capa de superposición
+                document.getElementById("balloons").style.display = "block"; // Muestra los globos arriba
+                document.getElementById("balloons-bottom").style.display = "block"; // Muestra los globos abajo
+                document.getElementById("revelation-text").style.display = "block"; // Muestra el texto
+                document.getElementById("restart").style.display = "inline"; // Muestra el botón para reiniciar
+            } else {
+                // Mensajes de burlas o sarcasmo
+                const messages = [
+                    "¡Wow qué increíble! ¡Que Jugador! 😒",
+                    "¡Bien jugado... o no! 😅",
+                    "¿Seguro que estás listo para ganar? 🤔",
+                    "¡No te preocupes, sigue intentándolo! 😂"
+                ];
+
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                document.getElementById("message").innerText = randomMessage;
+
+                document.getElementById("restart").style.display = "inline";
+            }
+        }
+    </script>
+    <audio id="background-audio" loop autoplay>
+        <source src="twinkle-like-a-star-8026.mp3" type="audio/mpeg">
+    </audio>
+</body>
+</html>
