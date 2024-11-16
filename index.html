@@ -191,7 +191,15 @@
         
         /* La línea 2 aparece después de 3.5s cuando la primera ya ha desaparecido */
         .line-2 {
-            animation: textAnimation 3s ease-in-out 6s forwards; /* La línea 2 aparece después de 3.5 segundos */
+            animation: textAnimation 2s ease-in-out 6s forwards; /* La línea 2 aparece después de 3.5 segundos */
+        }
+
+        .line-3 {
+            animation: textAnimation 1.5s ease-in-out 3.5s forwards; /* La línea 3 aparece después de 6 segundos */
+        }
+        
+        .line-4 {
+            animation: textAnimation 2s ease-in-out 6s forwards; /* La línea 4 aparece después de 9 segundos */
         }
         
         /* Animación de fondo arcoíris */
@@ -311,6 +319,8 @@
     <div id="revelation-text" style="display: none;">
         <span style=color:aliceblue class="revelation-line line-1">¿No ganaste?😢<br>¡Igual te decimos!🤣</span><br>
         <span class="revelation-line line-2">💖¡Leah Valeria is coming!💖</span>
+        <span style=color:aliceblue class="revelation-line line-3" style="display: none;">¡GANASTE! Eres digno de saber que... 👑</span><br>
+        <span class="revelation-line line-4" style="display: none;">💖¡Leah Valeria is coming!💖</span><br>
     </div>
 
     <script>
@@ -342,7 +352,7 @@
             cell.classList.add(currentPlayer);
 
             if (checkWinner(currentPlayer)) {
-                document.getElementById("message").innerText = `¡Has ganado! ¡Es niña Leah Valeria!`;
+                document.getElementById("message").innerText = `¡HAS GANADO!`;
                 gameOver = true;
                 playerWins++;
                 showRevelation();
@@ -460,12 +470,37 @@
 
         function showRevelation(isHumanWinner = true) {
             // Mostrar la revelación solo después de 3 empates o 3 victorias de la IA, o si el humano gana
-            if (isHumanWinner || aiWins >= 3 || ties >= 3) {
+            if (isHumanWinner) {
+                // Si el humano gana, mostrar solo las líneas 3 y 4
                 document.getElementById("overlay").style.display = "block"; // Muestra la capa de superposición
                 document.getElementById("balloons").style.display = "block"; // Muestra los globos arriba
                 document.getElementById("balloons-bottom").style.display = "block"; // Muestra los globos abajo
                 document.getElementById("revelation-text").style.display = "block"; // Muestra el texto
                 document.getElementById("restart").style.display = "inline"; // Muestra el botón para reiniciar
+        
+                // Mostrar las líneas 3 y 4 solo cuando el jugador gane
+                document.querySelector('.line-3').style.display = 'inline'; // Mostrar "¡GANASTE!"
+                document.querySelector('.line-4').style.display = 'inline'; // Mostrar "Eres digno de saber que..."
+        
+                // Ocultar las líneas 1 y 2 si aparecen
+                document.querySelector('.line-1').style.display = 'none';
+                document.querySelector('.line-2').style.display = 'none';
+            }
+            else if (aiWins >= 3 || ties >= 3) {
+                // Mostrar las líneas 1 y 2 solo si el jugador no ganó pero hubo 3 empates o 3 derrotas
+                document.getElementById("overlay").style.display = "block"; // Muestra la capa de superposición
+                document.getElementById("balloons").style.display = "block"; // Muestra los globos arriba
+                document.getElementById("balloons-bottom").style.display = "block"; // Muestra los globos abajo
+                document.getElementById("revelation-text").style.display = "block"; // Muestra el texto
+                document.getElementById("restart").style.display = "inline"; // Muestra el botón para reiniciar
+        
+                // Mostrar las líneas 1 y 2 solo si hubo 3 empates o 3 derrotas
+                document.querySelector('.line-1').style.display = 'inline'; // Mostrar "¿No ganaste? 😢"
+                document.querySelector('.line-2').style.display = 'inline'; // Mostrar "¡Igual te decimos! 🤣"
+        
+                // Ocultar las líneas 3 y 4 si aparecen
+                document.querySelector('.line-3').style.display = 'none';
+                document.querySelector('.line-4').style.display = 'none';
             } else {
                 // Mensajes de burlas o sarcasmo
                 const messages = [
@@ -474,10 +509,10 @@
                     "¿Seguro que estás listo para ganar? 🤔",
                     "¡No te preocupes, sigue intentándolo! 😂"
                 ];
-
+        
                 const randomMessage = messages[Math.floor(Math.random() * messages.length)];
                 document.getElementById("message").innerText = randomMessage;
-
+        
                 document.getElementById("restart").style.display = "inline";
             }
         }
