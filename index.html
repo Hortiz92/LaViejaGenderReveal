@@ -471,6 +471,10 @@
         function showRevelation(isHumanWinner = true) {
             // Mostrar la revelación solo después de 3 empates o 3 victorias de la IA, o si el humano gana
             if (isHumanWinner) {
+                // Reproducir sonido de tambores cuando el jugador gane
+                const drumSound = document.getElementById("applause");
+                drumSound.play(); // Reproducir el sonido
+
                 // Si el humano gana, mostrar solo las líneas 3 y 4
                 document.getElementById("overlay").style.display = "block"; // Muestra la capa de superposición
                 document.getElementById("balloons").style.display = "block"; // Muestra los globos arriba
@@ -487,6 +491,10 @@
                 document.querySelector('.line-2').style.display = 'none';
             }
             else if (aiWins >= 3 || ties >= 3) {
+                // Reproducir sonido de tambores cuando el jugador gane
+                const fiascoSound = document.getElementById("fiasco");
+                fiascoSound.play(); // Reproducir el sonido
+
                 // Mostrar las líneas 1 y 2 solo si el jugador no ganó pero hubo 3 empates o 3 derrotas
                 document.getElementById("overlay").style.display = "block"; // Muestra la capa de superposición
                 document.getElementById("balloons").style.display = "block"; // Muestra los globos arriba
@@ -520,5 +528,7 @@
     <audio id="background-audio" loop autoplay>
         <source src="twinkle-like-a-star-8026.mp3" type="audio/mpeg">
     </audio>
+    <audio id="applause" src="applause-236785.mp3" preload="auto"></audio>
+    <audio id="fiasco" src="fiasco-154915.mp3" preload="auto"></audio>
 </body>
 </html>
